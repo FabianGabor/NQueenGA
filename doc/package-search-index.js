@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"hu.nye.mi.nqueen"},{"l":"hu.nye.mi.nqueen.domain"},{"l":"hu.nye.mi.nqueen.service"},{"l":"hu.nye.mi.nqueen.view"}]
