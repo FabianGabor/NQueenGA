@@ -8,8 +8,17 @@ public class Board {
     }
 
     public void putQueens(int[] queens) {
+        emptyBoard();
         for (int i = 0; i < queens.length; i++) {
             this.queens[i][queens[i]] = 1;
+        }
+    }
+
+    private void emptyBoard() {
+        for (int i = 0; i < queens.length; i++) {
+            for (int j = 0; j < queens.length; j++) {
+                queens[i][j] = 0;
+            }
         }
     }
 
