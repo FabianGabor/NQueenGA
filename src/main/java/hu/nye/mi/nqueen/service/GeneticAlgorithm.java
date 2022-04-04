@@ -4,7 +4,6 @@ import hu.nye.mi.nqueen.domain.Board;
 import hu.nye.mi.nqueen.domain.Individual;
 import hu.nye.mi.nqueen.domain.Population;
 import hu.nye.mi.nqueen.view.View;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 
