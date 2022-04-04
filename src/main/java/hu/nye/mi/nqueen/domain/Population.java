@@ -1,25 +1,35 @@
 package hu.nye.mi.nqueen.domain;
 
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Population {
-    private final int size;
     private List<Individual> individuals;
 
-    public Population(int size, int chromosomeLength) {
-        this.size = size;
-
-        initPopulation(chromosomeLength);
+    private Population(int size) {
+        this.individuals = new ArrayList<>(size);
     }
 
-    private void initPopulation(int chromosomeLength) {
+    private Population(Population population) {
+        this.individuals = population.individuals;
+    }
+
+    public Population(int size, int chromosomeLength) {
+        initPopulation(size, chromosomeLength);
+    }
+
+    private void initPopulation(int size, int chromosomeLength) {
         individuals = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             individuals.add(new Individual(chromosomeLength));
         }
+    }
+
+    public int getSize() {
+        return individuals.size();
     }
 
     public List<Individual> getIndividuals() {
@@ -41,89 +51,77 @@ public class Population {
         return fittest.getFitness();
     }
 
+    private void addIndividual(Individual individual) {
+        individuals.add(individual);
+    }
+
     public void evolve(double crossoverRate, double mutationRate) {
-        List<Individual> newPopulation = new ArrayList<>(size);
+        Population newPopulation = getHalfPopulation(individuals);
 
-        Individual bestIndividual = getFittestIndividual();
-        //mutate(bestIndividual, mutationRate);
-        bestIndividual.calculateFitness();
-        newPopulation.add(bestIndividual); // add the fittest individual
-
-        for (int i = 1; i < size; i++) {
-            if (i < size/10) {
-                Individual parent1;
-                Individual parent2;
-
-                parent1 = tournamentSelection(size / 2);
-                do {
-                    parent2 = tournamentSelection(size / 2);
-                } while (parent1.equals(parent2));
-
-                List<Individual> children = crossover(parent1, parent2, crossoverRate);
-
-                for (Individual child : children) {
-                    mutate(child, mutationRate);
-                    child.calculateFitness();
-                    newPopulation.add(child);
-                }
-            } else {
-                mutate(individuals.get(i), mutationRate);
-                newPopulation.add(individuals.get(i));
+        while (newPopulation.getSize() < this.getSize()) {
+            Population parents;
+            try {
+                parents = new Population(getTwoRandomParents(newPopulation));
+                Individual child = crossover(parents, crossoverRate);
+                mutate(child, mutationRate);
+                child.calculateFitness();
+                newPopulation.addIndividual(child);
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
             }
         }
 
-        individuals = newPopulation;
-        sort();
+        individuals = newPopulation.getIndividuals();
+        this.sort();
     }
 
-    private Individual tournamentSelection(int tournamentSize) {
-        sort();
-
-        Individual opponent1;
-        Individual opponent2;
-
-        Random random;
-        try {
-            random = SecureRandom.getInstanceStrong();
-
-            opponent1 = getIndividual((int) (random.nextDouble() * tournamentSize));
-            do {
-                opponent2 = getIndividual((int) (random.nextDouble() * tournamentSize));
-            } while (opponent1.equals(opponent2));
-
-            return winner(opponent1, opponent2);
-        } catch (Exception e) {
-
+    private Population getHalfPopulation(List<Individual> individuals) {
+        Population newPopulation = new Population(this.getSize() / 2);
+        for (int i = 0; i < this.getSize() / 2; i++) {
+            newPopulation.addIndividual(individuals.get(i));
         }
-
-        return null;
+        return newPopulation;
     }
 
-    private List<Individual> crossover(Individual parent1, Individual parent2, double crossoverRate) {
-        Individual child1 = new Individual(parent1);
-        Individual child2 = new Individual(parent2);
+    private Population getTwoRandomParents(Population population) throws NoSuchAlgorithmException {
+        Individual parent1;
+        Individual parent2;
+        Random random = SecureRandom.getInstanceStrong();
 
-        for (int i = 0; i < child1.getChromosomeLength() / 2; i++) {
-            if (Math.random() <= crossoverRate) {
-                child1.setGene(i, parent2.getGene(i));
-                child2.setGene(i, parent1.getGene(i));
+        parent1 = population.getIndividual(random.nextInt(population.getSize()));
+        do {
+            parent2 = population.getIndividual(random.nextInt(population.getSize()));
+        } while (parent1.equals(parent2));
+
+        Population parents = new Population(2);
+        parents.addIndividual(parent1);
+        parents.addIndividual(parent2);
+
+        return parents;
+    }
+
+    private Individual crossover(Population parents, double crossoverRate) throws NoSuchAlgorithmException {
+        Individual child = new Individual(parents.getIndividual(0).getChromosomeLength());
+
+        Random random = SecureRandom.getInstanceStrong();
+
+        for (int i = 0; i < child.getChromosomeLength(); i++) {
+            if (parents.getIndividual(0).getGene(i) == parents.getIndividual(1).getGene(i) && random.nextDouble() < crossoverRate) {
+                child.setGene(i, parents.getIndividual(0).getGene(i));
             }
         }
 
-        child1.calculateFitness();
-        child2.calculateFitness();
+        child.calculateFitness();
 
-        List<Individual> children = new ArrayList<>();
-        children.add(child1);
-        children.add(child2);
-
-        return children;
+        return child;
     }
 
-    private void mutate(Individual individual, double mutationRate) {
-        if (Math.random() < mutationRate) {
-            int randomPosition = (int) (Math.random() * individual.getChromosomeLength());
-            int randomValue = (int) (Math.random() * individual.getChromosomeLength());
+    private void mutate(Individual individual, double mutationRate) throws NoSuchAlgorithmException {
+        Random random = SecureRandom.getInstanceStrong();
+
+        if (random.nextDouble() < mutationRate) {
+            int randomPosition = random.nextInt(individual.getChromosomeLength());
+            int randomValue = random.nextInt(individual.getChromosomeLength());
             individual.setGene(randomPosition, individual.getGene(randomValue));
         }
     }
@@ -134,10 +132,6 @@ public class Population {
 
     private int compare(Individual i1, Individual i2) {
         return i1.getFitness() - i2.getFitness();
-    }
-
-    private Individual winner(Individual i1, Individual i2) {
-        return i1.getFitness() < i2.getFitness() ? i1 : i2;
     }
 
     @Override
