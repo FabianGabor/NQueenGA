@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 
 public class Individual {
     private final int chromosomeLength;
-    private int[] chromosome;
+    private final int[] chromosome;
     private int fitness;
 
     public Individual(int chromosomeSize) {
@@ -16,12 +16,6 @@ public class Individual {
         this.chromosome = new int[chromosomeSize];
 
         initChromosome();
-    }
-
-    public Individual(Individual individual) {
-        this.chromosomeLength = individual.chromosomeLength;
-        this.chromosome = individual.chromosome.clone();
-        this.fitness = individual.fitness;
     }
 
     private void initChromosome() {
@@ -37,16 +31,12 @@ public class Individual {
         calculateFitness();
     }
 
-    public int getChromosomeLength() {
-        return chromosomeLength;
-    }
-
     public int[] getChromosome() {
         return chromosome;
     }
 
-    public void setChromosome(int[] chromosome) {
-        this.chromosome = chromosome;
+    public int getChromosomeLength() {
+        return chromosomeLength;
     }
 
     public int getGene(int index) {
