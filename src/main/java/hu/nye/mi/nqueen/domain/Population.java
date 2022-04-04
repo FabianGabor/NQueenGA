@@ -9,16 +9,16 @@ import java.util.Random;
 public class Population {
     private List<Individual> individuals;
 
+    public Population(int size, int chromosomeLength) {
+        initPopulation(size, chromosomeLength);
+    }
+
     private Population(int size) {
         this.individuals = new ArrayList<>(size);
     }
 
     private Population(Population population) {
         this.individuals = population.individuals;
-    }
-
-    public Population(int size, int chromosomeLength) {
-        initPopulation(size, chromosomeLength);
     }
 
     private void initPopulation(int size, int chromosomeLength) {
@@ -36,10 +36,6 @@ public class Population {
         return individuals;
     }
 
-    public Individual getIndividual(int index) {
-        return individuals.get(index);
-    }
-
     public Individual getFittestIndividual() {
         sort();
         return individuals.get(0);
@@ -49,6 +45,10 @@ public class Population {
         sort();
         Individual fittest = individuals.get(0);
         return fittest.getFitness();
+    }
+
+    private Individual getIndividual(int index) {
+        return individuals.get(index);
     }
 
     private void addIndividual(Individual individual) {
