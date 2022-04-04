@@ -54,7 +54,7 @@ public class GeneticAlgorithm {
                 view.print(String.valueOf(population));
             }
             if (printPopulationBest) {
-                view.print("Winner " + generation + ": " + newFittestIndividual);
+                view.print(String.format("Winner %4d: %s", generation, newFittestIndividual));
             }
             if (printBoard) {
                 board.putQueens(population.getFittestIndividual().getChromosome());
