@@ -15,6 +15,9 @@ public class GeneticAlgorithm {
     private final int sameWinnerMaxCount;
     private final Board board;
 
+    @Value("${print.population.init}")
+    private boolean printPopulationInit;
+
     @Value("${print.population}")
     private boolean printPopulation;
 
@@ -25,8 +28,10 @@ public class GeneticAlgorithm {
     private boolean printBoard;
 
     public void solve(View view) {
-        for (Individual individual : population.getIndividuals()) {
-            view.print(String.valueOf(individual));
+        if (printPopulationInit) {
+            for (Individual individual : population.getIndividuals()) {
+                view.print(String.valueOf(individual));
+            }
         }
 
         int generation = 0;
