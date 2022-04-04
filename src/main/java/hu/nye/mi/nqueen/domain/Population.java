@@ -1,5 +1,7 @@
 package hu.nye.mi.nqueen.domain;
 
+import lombok.SneakyThrows;
+
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -59,16 +61,11 @@ public class Population {
         Population newPopulation = getHalfPopulation(individuals);
 
         while (newPopulation.getSize() < this.getSize()) {
-            Population parents;
-            try {
-                parents = new Population(getTwoRandomParents(newPopulation));
-                Individual child = crossover(parents, crossoverRate);
-                mutate(child, mutationRate);
-                child.calculateFitness();
-                newPopulation.addIndividual(child);
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
+            Population parents = new Population(getTwoRandomParents(newPopulation));
+            Individual child = crossover(parents, crossoverRate);
+            mutate(child, mutationRate);
+            child.calculateFitness();
+            newPopulation.addIndividual(child);
         }
 
         individuals = newPopulation.getIndividuals();
@@ -83,14 +80,14 @@ public class Population {
         return newPopulation;
     }
 
-    private Population getTwoRandomParents(Population population) throws NoSuchAlgorithmException {
+    @SneakyThrows
+    private Population getTwoRandomParents(Population population) {
         Individual parent1;
         Individual parent2;
-        Random random = SecureRandom.getInstanceStrong();
 
-        parent1 = population.getIndividual(random.nextInt(population.getSize()));
+        parent1 = population.getIndividual(rng(population.getSize()));
         do {
-            parent2 = population.getIndividual(random.nextInt(population.getSize()));
+            parent2 = population.getIndividual(rng(population.getSize()));
         } while (parent1.equals(parent2));
 
         Population parents = new Population(2);
@@ -100,13 +97,14 @@ public class Population {
         return parents;
     }
 
-    private Individual crossover(Population parents, double crossoverRate) throws NoSuchAlgorithmException {
-        Individual child = new Individual(parents.getIndividual(0).getChromosomeLength());
-
-        Random random = SecureRandom.getInstanceStrong();
+    @SneakyThrows
+    private Individual crossover(Population parents, double crossoverRate) {
+        Individual parent1 = parents.getIndividual(0);
+        Individual parent2 = parents.getIndividual(1);
+        Individual child = new Individual(parent1.getChromosomeLength());
 
         for (int i = 0; i < child.getChromosomeLength(); i++) {
-            if (parents.getIndividual(0).getGene(i) == parents.getIndividual(1).getGene(i) && random.nextDouble() < crossoverRate) {
+            if (isGeneOfParentsEqualAtIndex(parent1, parent2, i) && rng(crossoverRate)) {
                 child.setGene(i, parents.getIndividual(0).getGene(i));
             }
         }
@@ -116,14 +114,27 @@ public class Population {
         return child;
     }
 
-    private void mutate(Individual individual, double mutationRate) throws NoSuchAlgorithmException {
-        Random random = SecureRandom.getInstanceStrong();
+    private boolean isGeneOfParentsEqualAtIndex(Individual i1, Individual i2, int geneIndex) {
+        return i1.getGene(geneIndex) == i2.getGene(geneIndex);
+    }
 
-        if (random.nextDouble() < mutationRate) {
-            int randomPosition = random.nextInt(individual.getChromosomeLength());
-            int randomValue = random.nextInt(individual.getChromosomeLength());
+    @SneakyThrows
+    private void mutate(Individual individual, double mutationRate) {
+        if (rng(mutationRate)) {
+            int randomPosition = rng(individual.getChromosomeLength());
+            int randomValue = rng(individual.getChromosomeLength());
             individual.setGene(randomPosition, individual.getGene(randomValue));
         }
+    }
+
+    private int rng(int value) throws NoSuchAlgorithmException {
+        Random random = SecureRandom.getInstanceStrong();
+        return random.nextInt(value);
+    }
+
+    private boolean rng(double value) throws NoSuchAlgorithmException {
+        Random random = SecureRandom.getInstanceStrong();
+        return random.nextDouble() < value;
     }
 
     private void sort() {
