@@ -1,1 +1,1 @@
-NQueenGA
+# N-Queen Genetic Algorithm
