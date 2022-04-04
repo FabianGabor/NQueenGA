@@ -5,14 +5,25 @@ import hu.nye.mi.nqueen.domain.Individual;
 import hu.nye.mi.nqueen.domain.Population;
 import hu.nye.mi.nqueen.view.View;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class GeneticAlgorithm {
-    private Population population;
-    private double crossoverRate;
-    private double mutationRate;
-    int sameWinnerMaxCount;
-    private Board board;
+    private final Population population;
+    private final double crossoverRate;
+    private final double mutationRate;
+    private final int sameWinnerMaxCount;
+    private final Board board;
+
+    @Value("${print.population}")
+    private boolean printPopulation;
+
+    @Value("${print.population.best}")
+    private boolean printPopulationBest;
+
+    @Value("${print.board}")
+    private boolean printBoard;
 
     public void solve(View view) {
         for (Individual individual : population.getIndividuals()) {
@@ -34,13 +45,17 @@ public class GeneticAlgorithm {
             }
 
             generation++;
-            view.print(String.valueOf(population));
-            view.print("Winner " + generation + ": " + newFittestIndividual);
+
+            if (printPopulation) {
+                view.print(String.valueOf(population));
+            }
+            if (printPopulationBest) {
+                view.print("Winner " + generation + ": " + newFittestIndividual);
+            }
+            if (printBoard) {
+                board.putQueens(population.getFittestIndividual().getChromosome());
+                view.print(String.valueOf(board));
+            }
         }
-
-
-        board.putQueens(population.getFittestIndividual().getChromosome());
-
-        view.print(String.valueOf(board));
     }
 }
