@@ -114,16 +114,6 @@ public class Population {
         return child;
     }
 
-    private int rng(int value) throws NoSuchAlgorithmException {
-        Random random = SecureRandom.getInstanceStrong();
-        return random.nextInt(value);
-    }
-
-    private boolean rng(double value) throws NoSuchAlgorithmException {
-        Random random = SecureRandom.getInstanceStrong();
-        return random.nextDouble() < value;
-    }
-
     private boolean isGeneOfParentsEqualAtIndex(Individual i1, Individual i2, int geneIndex) {
         return i1.getGene(geneIndex) == i2.getGene(geneIndex);
     }
@@ -135,6 +125,16 @@ public class Population {
             int randomValue = rng(individual.getChromosomeLength());
             individual.setGene(randomPosition, individual.getGene(randomValue));
         }
+    }
+
+    private int rng(int value) throws NoSuchAlgorithmException {
+        Random random = SecureRandom.getInstanceStrong();
+        return random.nextInt(value);
+    }
+
+    private boolean rng(double value) throws NoSuchAlgorithmException {
+        Random random = SecureRandom.getInstanceStrong();
+        return random.nextDouble() < value;
     }
 
     private void sort() {
